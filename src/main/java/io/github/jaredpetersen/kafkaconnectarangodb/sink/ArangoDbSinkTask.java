@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.net.ssl.SSLContext;
 
 import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.json.JsonConverterConfig;
@@ -40,12 +41,18 @@ public class ArangoDbSinkTask extends SinkTask {
   public final void start(final Map<String, String> props) {
     LOG.info("task config: {}", props);
 
+    try {
+      final SSLContext sc = SSLContext.getDefault();
+    } catch (Exception e) {
+    }
+
     // Set up database
     final ArangoDbSinkConfig config = new ArangoDbSinkConfig(props);
     final ArangoDB arangodb = new ArangoDB.Builder()
         .host(config.arangoDbHost, config.arangoDbPort)
         .user(config.arangoDbUser)
         .password(config.arangoDbPassword.value())
+        .useSsl(true) // TODO config.useSsl
         .build();
     final ArangoDatabase database = arangodb.db(config.arangoDbDatabaseName);
 
